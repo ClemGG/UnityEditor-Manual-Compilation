@@ -18,6 +18,13 @@ namespace Project.Editor
     [InitializeOnLoad]
     public class ManualCompilation
     {
+        #region Variables d'instance
+
+        private static Texture _recompileIcon;
+        private static Texture _recompileAndPlayIcon;
+
+        #endregion
+
         #region Fonctions privées
 
         /// <summary>
@@ -35,6 +42,10 @@ namespace Project.Editor
 
             // Par défaut, le bouton Play ne recompile plus les scripts
             UnityEditor.EditorSettings.enterPlayModeOptionsEnabled = true;
+
+            //Charge les icônes
+            _recompileIcon = Resources.Load<Texture>("icon_recompile");
+            _recompileAndPlayIcon = Resources.Load<Texture>("icon_recompile and play");
         }
 
         /// <summary>
@@ -56,7 +67,8 @@ namespace Project.Editor
             GUILayout.FlexibleSpace();
 
             // Relance la compilation manuellement depuis un bouton dans la Toolbar d'Unity
-            if (GUILayout.Button(new GUIContent("R", "Recompile"), EditorStyles.toolbarButton, GUILayout.MinWidth(30)))
+            if (GUILayout.Button(new GUIContent(_recompileIcon, "Recompile"), EditorStyles.toolbarButton, GUILayout.Width(30)))
+            //if (GUILayout.Button(new GUIContent("R", "Recompile"), EditorStyles.toolbarButton, GUILayout.MinWidth(30)))
             {
                 if (!EditorApplication.isPlaying)
                 {
@@ -66,7 +78,7 @@ namespace Project.Editor
             }
 
             // Recompile et lance le jeu (le bouton Play par défaut ne recompilera pas les scripts)
-            if (GUILayout.Button(new GUIContent("R&P", "Recompile And Play"), EditorStyles.toolbarButton, GUILayout.MinWidth(30)))
+            if (GUILayout.Button(new GUIContent(_recompileAndPlayIcon, "Recompile And Play"), EditorStyles.toolbarButton, GUILayout.Width(30)))
             {
                 if (EditorApplication.isPlaying)
                 {
