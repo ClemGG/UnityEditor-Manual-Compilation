@@ -18,6 +18,8 @@ namespace Project.Editor
     [InitializeOnLoad]
     public class ManualCompilation
     {
+        #region Fonctions privées
+
         /// <summary>
         /// Appelé auto. par InitializeOnLoad
         /// ou quand on recompile manuellement
@@ -30,6 +32,19 @@ namespace Project.Editor
 
             // Empêche la recompilation automatique
             EditorApplication.LockReloadAssemblies();
+
+            // Par défaut, le bouton Play ne recompile plus les scripts
+            UnityEditor.EditorSettings.enterPlayModeOptionsEnabled = true;
+        }
+
+        /// <summary>
+        /// Permet d'activer ou non la recompilation totale du projet depuis l'éditeur
+        /// </summary>
+        [MenuItem("Manual Compilation/Clear Build Cache (fail safe)")]
+        private static void ToggleClearBuildCache()
+        {
+            bool clearBuildCache = Menu.GetChecked("Manual Compilation/Clear Build Cache (fail safe)");
+            Menu.SetChecked("Manual Compilation/Clear Build Cache (fail safe)", !clearBuildCache);
         }
 
         /// <summary>
@@ -43,10 +58,38 @@ namespace Project.Editor
             // Relance la compilation manuellement depuis un bouton dans la Toolbar d'Unity
             if (GUILayout.Button(new GUIContent("R", "Recompile"), EditorStyles.toolbarButton, GUILayout.MinWidth(30)))
             {
-                EditorApplication.UnlockReloadAssemblies();
-                Recompile();
+                if (!EditorApplication.isPlaying)
+                {
+                    EditorApplication.UnlockReloadAssemblies();
+                    Recompile();
+                }
             }
 
+            // Recompile et lance le jeu (le bouton Play par défaut ne recompilera pas les scripts)
+            if (GUILayout.Button(new GUIContent("R&P", "Recompile And Play"), EditorStyles.toolbarButton, GUILayout.MinWidth(30)))
+            {
+                if (EditorApplication.isPlaying)
+                {
+                    EditorApplication.ExitPlaymode();
+                }
+                else
+                {
+                    UnityEditor.EditorSettings.enterPlayModeOptionsEnabled = false;
+                    EditorApplication.UnlockReloadAssemblies();
+                    CompilationPipeline.compilationFinished += OnCompilationFinished;
+
+                    Recompile();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Appelée quand les scripts sont recompilés
+        /// </summary>
+        private static void OnCompilationFinished(object obj)
+        {
+            EditorApplication.EnterPlaymode();
+            CompilationPipeline.compilationFinished -= OnCompilationFinished;
         }
 
         /// <summary>
@@ -55,13 +98,16 @@ namespace Project.Editor
         private static void Recompile()
         {
 #if UNITY_2019_3_OR_NEWER
-            CompilationPipeline.RequestScriptCompilation();
+            bool clearBuildCache = Menu.GetChecked("Manual Compilation/Clear Build Cache (fail safe)");
+            CompilationPipeline.RequestScriptCompilation(clearBuildCache ? RequestScriptCompilationOptions.CleanBuildCache : RequestScriptCompilationOptions.None);
 #elif UNITY_2017_1_OR_NEWER
-                 var editorAssembly = Assembly.GetAssembly(typeof(Editor));
-                 var editorCompilationInterfaceType = editorAssembly.GetType("UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface");
-                 var dirtyAllScriptsMethod = editorCompilationInterfaceType.GetMethod("DirtyAllScripts", BindingFlags.Static | BindingFlags.Public);
-                 dirtyAllScriptsMethod.Invoke(editorCompilationInterfaceType, null);
+            var editorAssembly = Assembly.GetAssembly(typeof(Editor));
+            var editorCompilationInterfaceType = editorAssembly.GetType("UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface");
+            var dirtyAllScriptsMethod = editorCompilationInterfaceType.GetMethod("DirtyAllScripts", BindingFlags.Static | BindingFlags.Public);
+            dirtyAllScriptsMethod.Invoke(editorCompilationInterfaceType, null);
 #endif
         }
+
+        #endregion
     }
 }

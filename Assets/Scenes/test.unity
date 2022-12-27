@@ -246,8 +246,8 @@ ConstantForce:
   m_Enabled: 1
   m_Force: {x: 0, y: 0, z: 0}
   m_RelativeForce: {x: 0, y: 0, z: 0}
-  m_Torque: {x: 0, y: 0.01, z: 0}
-  m_RelativeTorque: {x: 0, y: 0, z: 0}
+  m_Torque: {x: 0, y: 0, z: 0}
+  m_RelativeTorque: {x: 0, y: 0.1, z: 0}
 --- !u!54 &1698380634
 Rigidbody:
   m_ObjectHideFlags: 0
