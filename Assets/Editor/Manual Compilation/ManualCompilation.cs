@@ -42,10 +42,11 @@ namespace Project.Editor
 
             // Par défaut, le bouton Play ne recompile plus les scripts
             UnityEditor.EditorSettings.enterPlayModeOptionsEnabled = true;
+            UnityEditor.EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.DisableDomainReload | EnterPlayModeOptions.DisableSceneBackupUnlessDirty;
 
             //Charge les icônes
-            _recompileIcon = Resources.Load<Texture>("icon_recompile");
-            _recompileAndPlayIcon = Resources.Load<Texture>("icon_recompile and play");
+            _recompileIcon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/Manual Compilation/Resources/icon_recompile.psd");
+            _recompileAndPlayIcon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/Manual Compilation/Resources/icon_recompile and play.psd");
         }
 
         /// <summary>
@@ -87,6 +88,8 @@ namespace Project.Editor
                 else
                 {
                     UnityEditor.EditorSettings.enterPlayModeOptionsEnabled = false;
+                    UnityEditor.EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.None;
+
                     EditorApplication.UnlockReloadAssemblies();
                     CompilationPipeline.compilationFinished += OnCompilationFinished;
 
