@@ -12,8 +12,8 @@ using UnityToolbarExtender;
 namespace Project.Editor
 {
     /// <summary>
-    /// InitializeOnLoad appelera automatiquement le constructeur
-    /// quand Unity s'ouvre
+    /// InitializeOnLoad appelera automatiquement le constructeur quand Unity s'ouvre.
+    /// Penser à désactiver Auto Refresh dans Edit/Preferences/Asset Pipeline
     /// </summary>
     [InitializeOnLoad]
     public class ManualCompilation
