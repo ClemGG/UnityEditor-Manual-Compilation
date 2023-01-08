@@ -41,6 +41,7 @@ namespace Project.Editor
             EditorApplication.LockReloadAssemblies();
 
             // Par défaut, le bouton Play ne recompile plus les scripts
+            EditorPrefs.SetBool("kAutoRefresh", false);
             UnityEditor.EditorSettings.enterPlayModeOptionsEnabled = true;
             UnityEditor.EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.DisableDomainReload | EnterPlayModeOptions.DisableSceneBackupUnlessDirty;
 
