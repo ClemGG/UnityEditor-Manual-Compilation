@@ -25,7 +25,7 @@ namespace Project.Editor
 
         #endregion
 
-        #region Fonctions privées
+        #region Constructeurs
 
         /// <summary>
         /// Appelé auto. par InitializeOnLoad
@@ -46,18 +46,35 @@ namespace Project.Editor
             UnityEditor.EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.DisableDomainReload | EnterPlayModeOptions.DisableSceneBackupUnlessDirty;
 
             //Charge les icônes
-            _recompileIcon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/Manual Compilation/Resources/icon_recompile.psd");
-            _recompileAndPlayIcon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/Manual Compilation/Resources/icon_recompile and play.psd");
+            _recompileIcon = EditorGUIUtility.Load("Assets/Editor/Manual Compilation/Resources/icon_recompile.psd") as Texture;
+            _recompileAndPlayIcon = EditorGUIUtility.Load("Assets/Editor/Manual Compilation/Resources/icon_recompile and play.psd") as Texture;
+        }
+
+        #endregion
+
+        #region Fonctions privées
+
+        /// <summary>
+        /// Permet d'activer ou non la recompilation totale du projet depuis l'éditeur
+        /// </summary>
+        [MenuItem("Manual Compilation/Clean Build Cache (fail safe)")]
+        private static void ToggleCleanBuildCacheMenuBtn()
+        {
+            bool clearBuildCache = Menu.GetChecked("Manual Compilation/Clean Build Cache (fail safe)");
+            Menu.SetChecked("Manual Compilation/Clean Build Cache (fail safe)", !clearBuildCache);
         }
 
         /// <summary>
         /// Permet d'activer ou non la recompilation totale du projet depuis l'éditeur
         /// </summary>
-        [MenuItem("Manual Compilation/Clear Build Cache (fail safe)")]
-        private static void ToggleClearBuildCache()
+        [MenuItem("Manual Compilation/Recompile (use if buttons are disabled)")]
+        private static void RecompileMenuBtn()
         {
-            bool clearBuildCache = Menu.GetChecked("Manual Compilation/Clear Build Cache (fail safe)");
-            Menu.SetChecked("Manual Compilation/Clear Build Cache (fail safe)", !clearBuildCache);
+            if (!EditorApplication.isPlaying)
+            {
+                EditorApplication.UnlockReloadAssemblies();
+                Recompile();
+            }
         }
 
         /// <summary>
@@ -68,9 +85,13 @@ namespace Project.Editor
         {
             GUILayout.FlexibleSpace();
 
+            if (EditorApplication.isCompiling)
+            {
+                GUI.enabled = false;
+            }
+
             // Relance la compilation manuellement depuis un bouton dans la Toolbar d'Unity
             if (GUILayout.Button(new GUIContent(_recompileIcon, "Recompile"), EditorStyles.toolbarButton, GUILayout.Width(30)))
-            //if (GUILayout.Button(new GUIContent("R", "Recompile"), EditorStyles.toolbarButton, GUILayout.MinWidth(30)))
             {
                 if (!EditorApplication.isPlaying)
                 {
@@ -92,7 +113,7 @@ namespace Project.Editor
                     UnityEditor.EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.None;
 
                     EditorApplication.UnlockReloadAssemblies();
-                    CompilationPipeline.compilationFinished += OnCompilationFinished;
+                    CompilationPipeline.compilationFinished += OnCompileAndPlayFinished;
 
                     Recompile();
                 }
@@ -102,10 +123,10 @@ namespace Project.Editor
         /// <summary>
         /// Appelée quand les scripts sont recompilés
         /// </summary>
-        private static void OnCompilationFinished(object obj)
+        private static void OnCompileAndPlayFinished(object obj)
         {
             EditorApplication.EnterPlaymode();
-            CompilationPipeline.compilationFinished -= OnCompilationFinished;
+            CompilationPipeline.compilationFinished -= OnCompileAndPlayFinished;
         }
 
         /// <summary>
@@ -114,8 +135,8 @@ namespace Project.Editor
         private static void Recompile()
         {
 #if UNITY_2019_3_OR_NEWER
-            bool clearBuildCache = Menu.GetChecked("Manual Compilation/Clear Build Cache (fail safe)");
-            CompilationPipeline.RequestScriptCompilation(clearBuildCache ? RequestScriptCompilationOptions.CleanBuildCache : RequestScriptCompilationOptions.None);
+            bool cleanBuildCache = Menu.GetChecked("Manual Compilation/Clean Build Cache (fail safe)");
+            CompilationPipeline.RequestScriptCompilation(cleanBuildCache ? RequestScriptCompilationOptions.CleanBuildCache : RequestScriptCompilationOptions.None);
 #elif UNITY_2017_1_OR_NEWER
             var editorAssembly = Assembly.GetAssembly(typeof(Editor));
             var editorCompilationInterfaceType = editorAssembly.GetType("UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface");
