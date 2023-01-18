@@ -83,6 +83,13 @@ namespace Project.Editor
         /// </summary>
         private static void OnToolbarGUI()
         {
+            if(_recompileIcon == null)
+            {
+                //Charge les icônes
+                _recompileIcon = EditorGUIUtility.Load("Assets/Editor/Manual Compilation/Resources/icon_recompile.psd") as Texture;
+                _recompileAndPlayIcon = EditorGUIUtility.Load("Assets/Editor/Manual Compilation/Resources/icon_recompile and play.psd") as Texture;
+            }
+
             GUILayout.FlexibleSpace();
 
             if (EditorApplication.isCompiling)
