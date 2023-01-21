@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEditor;
 #if UNITY_2019_3_OR_NEWER
 using UnityEditor.Compilation;
@@ -13,7 +14,6 @@ namespace Project.Editor
 {
     /// <summary>
     /// InitializeOnLoad appelera automatiquement le constructeur quand Unity s'ouvre.
-    /// Penser à désactiver Auto Refresh dans Edit/Preferences/Asset Pipeline
     /// </summary>
     [InitializeOnLoad]
     public class ManualCompilation
@@ -54,6 +54,8 @@ namespace Project.Editor
 
         #region Fonctions privées
 
+        #region Menu
+
         /// <summary>
         /// Permet d'activer ou non la recompilation totale du projet depuis l'éditeur
         /// </summary>
@@ -78,6 +80,17 @@ namespace Project.Editor
         }
 
         /// <summary>
+        /// Relance Unity si besoin
+        /// </summary>
+        [MenuItem("Manual Compilation/Restart Unity")]
+        public static void ReopenProject()
+        {
+            EditorApplication.OpenProject(Directory.GetCurrentDirectory());
+        }
+
+        #endregion
+
+        /// <summary>
         /// S'abonne au ToolbarExtender pour créer des boutons
         /// à côté des boutons du mode Play
         /// </summary>
@@ -86,8 +99,8 @@ namespace Project.Editor
             if(_recompileIcon == null)
             {
                 //Charge les icônes
-                _recompileIcon = EditorGUIUtility.Load("Assets/Editor/Manual Compilation/Resources/icon_recompile.psd") as Texture;
-                _recompileAndPlayIcon = EditorGUIUtility.Load("Assets/Editor/Manual Compilation/Resources/icon_recompile and play.psd") as Texture;
+                _recompileIcon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Plugins/Editor/Manual Compilation/Resources/icon_recompile.psd");
+                _recompileAndPlayIcon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Plugins/Editor/Manual Compilation/Resources/icon_recompile and play.psd");
             }
 
             GUILayout.FlexibleSpace();
