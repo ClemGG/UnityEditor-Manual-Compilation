@@ -52,43 +52,35 @@ namespace Project.Editor
 
         #endregion
 
-        #region Fonctions privées
-
-        #region Menu
+        #region Fonctions publiques
 
         /// <summary>
-        /// Permet d'activer ou non la recompilation totale du projet depuis l'éditeur
+        /// Recompile les scripts manuellement
         /// </summary>
-        [MenuItem("Manual Compilation/Clean Build Cache (fail safe)")]
-        private static void ToggleCleanBuildCacheMenuBtn()
+        public static void Recompile()
         {
-            bool clearBuildCache = Menu.GetChecked("Manual Compilation/Clean Build Cache (fail safe)");
-            Menu.SetChecked("Manual Compilation/Clean Build Cache (fail safe)", !clearBuildCache);
+#if UNITY_2019_3_OR_NEWER
+            bool cleanBuildCache = Menu.GetChecked("Manual Compilation/Clean Build Cache (fail safe)");
+            CompilationPipeline.RequestScriptCompilation(cleanBuildCache ? RequestScriptCompilationOptions.CleanBuildCache : RequestScriptCompilationOptions.None);
+#elif UNITY_2017_1_OR_NEWER
+            var editorAssembly = Assembly.GetAssembly(typeof(Editor));
+            var editorCompilationInterfaceType = editorAssembly.GetType("UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface");
+            var dirtyAllScriptsMethod = editorCompilationInterfaceType.GetMethod("DirtyAllScripts", BindingFlags.Static | BindingFlags.Public);
+            dirtyAllScriptsMethod.Invoke(editorCompilationInterfaceType, null);
+#endif
         }
 
         /// <summary>
-        /// Permet d'activer ou non la recompilation totale du projet depuis l'éditeur
+        /// Permet de rafraîchir les assets de l'onglet Project
         /// </summary>
-        [MenuItem("Manual Compilation/Recompile (use if buttons are disabled)")]
-        private static void RecompileMenuBtn()
+        public static void RefreshAssets()
         {
-            if (!EditorApplication.isPlaying)
-            {
-                EditorApplication.UnlockReloadAssemblies();
-                Recompile();
-            }
-        }
-
-        /// <summary>
-        /// Relance Unity si besoin
-        /// </summary>
-        [MenuItem("Manual Compilation/Restart Unity")]
-        public static void ReopenProject()
-        {
-            EditorApplication.OpenProject(Directory.GetCurrentDirectory());
+            AssetDatabase.Refresh();
         }
 
         #endregion
+
+        #region Fonctions privées
 
         /// <summary>
         /// S'abonne au ToolbarExtender pour créer des boutons
@@ -108,6 +100,15 @@ namespace Project.Editor
             if (EditorApplication.isCompiling)
             {
                 GUI.enabled = false;
+            }
+
+            // Relance la compilation manuellement depuis un bouton dans la Toolbar d'Unity
+            if (GUILayout.Button(new GUIContent("R", "Refresh Assets"), EditorStyles.toolbarButton, GUILayout.Width(30)))
+            {
+                if (!EditorApplication.isPlaying)
+                {
+                    RefreshAssets();
+                }
             }
 
             // Relance la compilation manuellement depuis un bouton dans la Toolbar d'Unity
@@ -147,22 +148,6 @@ namespace Project.Editor
         {
             EditorApplication.EnterPlaymode();
             CompilationPipeline.compilationFinished -= OnCompileAndPlayFinished;
-        }
-
-        /// <summary>
-        /// Recompile les scripts manuellement
-        /// </summary>
-        private static void Recompile()
-        {
-#if UNITY_2019_3_OR_NEWER
-            bool cleanBuildCache = Menu.GetChecked("Manual Compilation/Clean Build Cache (fail safe)");
-            CompilationPipeline.RequestScriptCompilation(cleanBuildCache ? RequestScriptCompilationOptions.CleanBuildCache : RequestScriptCompilationOptions.None);
-#elif UNITY_2017_1_OR_NEWER
-            var editorAssembly = Assembly.GetAssembly(typeof(Editor));
-            var editorCompilationInterfaceType = editorAssembly.GetType("UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface");
-            var dirtyAllScriptsMethod = editorCompilationInterfaceType.GetMethod("DirtyAllScripts", BindingFlags.Static | BindingFlags.Public);
-            dirtyAllScriptsMethod.Invoke(editorCompilationInterfaceType, null);
-#endif
         }
 
         #endregion
