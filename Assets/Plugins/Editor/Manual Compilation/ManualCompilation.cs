@@ -1,4 +1,3 @@
-using System.IO;
 using UnityEditor;
 #if UNITY_2019_3_OR_NEWER
 using UnityEditor.Compilation;
@@ -16,8 +15,15 @@ namespace Project.Editor
     /// InitializeOnLoad appelera automatiquement le constructeur quand Unity s'ouvre.
     /// </summary>
     [InitializeOnLoad]
-    public class ManualCompilation
+    public class ManualCompilation : AssetPostprocessor
     {
+        #region Constantes
+
+        public const string RECOMPILE_ICON_PATH = "Assets/Plugins/Editor/Manual Compilation/Resources/icon_recompile.psd";
+        public const string RECOMPILE_AND_PLAY_ICON_PATH = "Assets/Plugins/Editor/Manual Compilation/Resources/icon_recompile and play.psd";
+
+        #endregion
+
         #region Variables d'instance
 
         private static Texture _recompileIcon;
@@ -41,13 +47,11 @@ namespace Project.Editor
             EditorApplication.LockReloadAssemblies();
 
             // Par défaut, le bouton Play ne recompile plus les scripts
-            EditorPrefs.SetBool("kAutoRefresh", false);
+            // EditorPrefs.SetBool("kAutoRefresh", false);
+            AssetDatabase.DisallowAutoRefresh();
+
             UnityEditor.EditorSettings.enterPlayModeOptionsEnabled = true;
             UnityEditor.EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.DisableDomainReload | EnterPlayModeOptions.DisableSceneBackupUnlessDirty;
-
-            //Charge les icônes
-            _recompileIcon = EditorGUIUtility.Load("Assets/Editor/Manual Compilation/Resources/icon_recompile.psd") as Texture;
-            _recompileAndPlayIcon = EditorGUIUtility.Load("Assets/Editor/Manual Compilation/Resources/icon_recompile and play.psd") as Texture;
         }
 
         #endregion
@@ -59,8 +63,10 @@ namespace Project.Editor
         /// </summary>
         public static void Recompile()
         {
+            EditorApplication.UnlockReloadAssemblies();
+
 #if UNITY_2019_3_OR_NEWER
-            bool cleanBuildCache = Menu.GetChecked("Manual Compilation/Clean Build Cache (fail safe)");
+            bool cleanBuildCache = Menu.GetChecked(ManualCompilationMenus.CLEAN_BUILD_CACHE_PATH);
             CompilationPipeline.RequestScriptCompilation(cleanBuildCache ? RequestScriptCompilationOptions.CleanBuildCache : RequestScriptCompilationOptions.None);
 #elif UNITY_2017_1_OR_NEWER
             var editorAssembly = Assembly.GetAssembly(typeof(Editor));
@@ -75,6 +81,7 @@ namespace Project.Editor
         /// </summary>
         public static void RefreshAssets()
         {
+            EditorApplication.UnlockReloadAssemblies();
             AssetDatabase.Refresh();
         }
 
@@ -88,11 +95,11 @@ namespace Project.Editor
         /// </summary>
         private static void OnToolbarGUI()
         {
-            if(_recompileIcon == null)
+            if (_recompileIcon == null)
             {
                 //Charge les icônes
-                _recompileIcon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Plugins/Editor/Manual Compilation/Resources/icon_recompile.psd");
-                _recompileAndPlayIcon = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Plugins/Editor/Manual Compilation/Resources/icon_recompile and play.psd");
+                _recompileIcon = EditorGUIUtility.Load(RECOMPILE_ICON_PATH) as Texture;
+                _recompileAndPlayIcon = EditorGUIUtility.Load(RECOMPILE_AND_PLAY_ICON_PATH) as Texture;
             }
 
             GUILayout.FlexibleSpace();
@@ -116,7 +123,6 @@ namespace Project.Editor
             {
                 if (!EditorApplication.isPlaying)
                 {
-                    EditorApplication.UnlockReloadAssemblies();
                     Recompile();
                 }
             }
@@ -133,7 +139,6 @@ namespace Project.Editor
                     UnityEditor.EditorSettings.enterPlayModeOptionsEnabled = false;
                     UnityEditor.EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.None;
 
-                    EditorApplication.UnlockReloadAssemblies();
                     CompilationPipeline.compilationFinished += OnCompileAndPlayFinished;
 
                     Recompile();
