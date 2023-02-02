@@ -21,6 +21,7 @@ namespace Project.Editor
 
         public const string RECOMPILE_ICON_PATH = "Assets/Plugins/Editor/Manual Compilation/Resources/icon_recompile.psd";
         public const string RECOMPILE_AND_PLAY_ICON_PATH = "Assets/Plugins/Editor/Manual Compilation/Resources/icon_recompile and play.psd";
+        public const string REFRESH_ICON_PATH = "Assets/Plugins/Editor/Manual Compilation/Resources/icon_refresh.psd";
 
         #endregion
 
@@ -28,6 +29,7 @@ namespace Project.Editor
 
         private static Texture _recompileIcon;
         private static Texture _recompileAndPlayIcon;
+        private static Texture _refreshIcon;
 
         #endregion
 
@@ -100,6 +102,7 @@ namespace Project.Editor
                 //Charge les icônes
                 _recompileIcon = EditorGUIUtility.Load(RECOMPILE_ICON_PATH) as Texture;
                 _recompileAndPlayIcon = EditorGUIUtility.Load(RECOMPILE_AND_PLAY_ICON_PATH) as Texture;
+                _refreshIcon = EditorGUIUtility.Load(REFRESH_ICON_PATH) as Texture;
             }
 
             GUILayout.FlexibleSpace();
@@ -110,7 +113,7 @@ namespace Project.Editor
             }
 
             // Relance la compilation manuellement depuis un bouton dans la Toolbar d'Unity
-            if (GUILayout.Button(new GUIContent("R", "Refresh Assets"), EditorStyles.toolbarButton, GUILayout.Width(30)))
+            if (GUILayout.Button(new GUIContent(_refreshIcon, "Refresh Assets"), EditorStyles.toolbarButton, GUILayout.Width(30)))
             {
                 if (!EditorApplication.isPlaying)
                 {
