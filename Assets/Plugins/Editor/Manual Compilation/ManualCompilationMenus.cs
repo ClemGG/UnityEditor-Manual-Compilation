@@ -7,7 +7,7 @@ namespace Project.Editor
     /// Affiche les menus de la compilation manuelle 
     /// dans la barre d'outils d'Unity
     /// </summary>
-    public static class ManualCompilationMenus
+    public sealed class ManualCompilationMenus
     {
         #region Constantes
 

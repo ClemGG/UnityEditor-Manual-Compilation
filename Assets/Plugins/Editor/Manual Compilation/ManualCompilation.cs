@@ -15,7 +15,7 @@ namespace Project.Editor
     /// InitializeOnLoad appelera automatiquement le constructeur quand Unity s'ouvre.
     /// </summary>
     [InitializeOnLoad]
-    public class ManualCompilation : AssetPostprocessor
+    public sealed class ManualCompilation : AssetPostprocessor
     {
         #region Constantes
 
@@ -30,31 +30,6 @@ namespace Project.Editor
         private static Texture _recompileIcon;
         private static Texture _recompileAndPlayIcon;
         private static Texture _refreshIcon;
-
-        #endregion
-
-        #region Constructeurs
-
-        /// <summary>
-        /// Appelé auto. par InitializeOnLoad
-        /// ou quand on recompile manuellement
-        /// </summary>
-        static ManualCompilation()
-        {
-            // Extension pour ajouter des boutons dans la Toolbar d'Unity
-            // avant ou après les boutons pour lancer le mode Play
-            ToolbarExtender.LeftToolbarGUI.Add(OnToolbarGUI);
-
-            // Empêche la recompilation automatique
-            EditorApplication.LockReloadAssemblies();
-
-            // Par défaut, le bouton Play ne recompile plus les scripts
-            // EditorPrefs.SetBool("kAutoRefresh", false);
-            AssetDatabase.DisallowAutoRefresh();
-
-            UnityEditor.EditorSettings.enterPlayModeOptionsEnabled = true;
-            UnityEditor.EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.DisableDomainReload | EnterPlayModeOptions.DisableSceneBackupUnlessDirty;
-        }
 
         #endregion
 
@@ -156,6 +131,35 @@ namespace Project.Editor
         {
             EditorApplication.EnterPlaymode();
             CompilationPipeline.compilationFinished -= OnCompileAndPlayFinished;
+        }
+
+        /// <summary>
+        /// Appelée quand les scripts sont recompilés
+        /// ou quand les assets sont réimportées
+        /// </summary>
+        /// <param name="importedAssets">Les assets importées</param>
+        /// <param name="deletedAssets">Les assets supprimées</param>
+        /// <param name="movedAssets">Les assets déplacées</param>
+        /// <param name="movedFromAssetPaths">Les emplacements d'origine des assets importées</param>
+        /// <param name="didDomainReload">Indique si les scripts ont été recompilés</param>
+        private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)
+        {
+            // Empêche la recompilation automatique
+            EditorApplication.LockReloadAssemblies();
+
+            // Par défaut, le bouton Play ne recompile plus les scripts
+            // EditorPrefs.SetBool("kAutoRefresh", false);
+            AssetDatabase.DisallowAutoRefresh();
+
+            UnityEditor.EditorSettings.enterPlayModeOptionsEnabled = true;
+            UnityEditor.EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.DisableDomainReload | EnterPlayModeOptions.DisableSceneBackupUnlessDirty;
+            
+            if (didDomainReload)
+            {
+                // Extension pour ajouter des boutons dans la Toolbar d'Unity
+                // avant ou après les boutons pour lancer le mode Play
+                ToolbarExtender.LeftToolbarGUI.Add(OnToolbarGUI);
+            }
         }
 
         #endregion
