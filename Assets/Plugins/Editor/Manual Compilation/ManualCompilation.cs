@@ -93,6 +93,20 @@ namespace Project.Editor
         }
 
         /// <summary>
+        /// Recompile les scripts manuellement
+        /// et lance le mode Jeu
+        /// </summary>
+        public static void RecompileAndPlay()
+        {
+            EditorSettings.enterPlayModeOptionsEnabled = false;
+            EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.None;
+
+            CompilationPipeline.compilationFinished += OnCompileAndPlayFinished;
+
+            Recompile();
+        }
+
+        /// <summary>
         /// Permet de rafraîchir les assets de l'onglet Project
         /// </summary>
         public static void RefreshAssets()
@@ -119,6 +133,7 @@ namespace Project.Editor
             }
 
             // Relance la compilation manuellement depuis un bouton dans la Toolbar d'Unity
+
             if (GUILayout.Button(new GUIContent(_refreshIcon, "Refresh Assets"), EditorStyles.toolbarButton, GUILayout.Width(30)))
             {
                 if (!EditorApplication.isPlaying)
@@ -128,6 +143,7 @@ namespace Project.Editor
             }
 
             // Relance la compilation manuellement depuis un bouton dans la Toolbar d'Unity
+
             if (GUILayout.Button(new GUIContent(_recompileIcon, "Recompile"), EditorStyles.toolbarButton, GUILayout.Width(30)))
             {
                 if (!EditorApplication.isPlaying)
@@ -137,6 +153,7 @@ namespace Project.Editor
             }
 
             // Recompile et lance le jeu (le bouton Play par défaut ne recompilera pas les scripts)
+
             if (GUILayout.Button(new GUIContent(_recompileAndPlayIcon, "Recompile And Play"), EditorStyles.toolbarButton, GUILayout.Width(30)))
             {
                 if (EditorApplication.isPlaying)
@@ -145,12 +162,7 @@ namespace Project.Editor
                 }
                 else
                 {
-                    EditorSettings.enterPlayModeOptionsEnabled = false;
-                    EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.None;
-
-                    CompilationPipeline.compilationFinished += OnCompileAndPlayFinished;
-
-                    Recompile();
+                    RecompileAndPlay();
                 }
             }
         }

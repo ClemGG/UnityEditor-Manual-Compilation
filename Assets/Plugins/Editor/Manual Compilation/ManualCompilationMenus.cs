@@ -13,6 +13,7 @@ namespace Project.Editor
 
         public const string CLEAN_BUILD_CACHE_PATH = "Manual Compilation/Settings/Clean Build Cache (fail safe)";
         public const string RECOMPILE_PATH = "Manual Compilation/Recompile (use if buttons are disabled)";
+        public const string RECOMPILE_AND_PLAY_PATH = "Manual Compilation/Recompile and Play (use if buttons are disabled)";
         public const string REFRESH_ASSETS_PATH = "Manual Compilation/Refresh Assets (use if buttons are disabled)";
         public const string RESTART_UNITY_PATH = "Manual Compilation/Restart Unity";
 
@@ -39,6 +40,23 @@ namespace Project.Editor
             if (!EditorApplication.isPlaying)
             {
                 ManualCompilation.Recompile();
+            }
+        }
+
+        /// <summary>
+        /// Permet d'activer ou non la recompilation totale du projet depuis l'éditeur
+        /// avant de lancer le mode Jeu
+        /// </summary>
+        [MenuItem(RECOMPILE_AND_PLAY_PATH)]
+        private static void RecompileAndPlayMenuBtn()
+        {
+            if (EditorApplication.isPlaying)
+            {
+                EditorApplication.ExitPlaymode();
+            }
+            else
+            {
+                ManualCompilation.RecompileAndPlay();
             }
         }
 
