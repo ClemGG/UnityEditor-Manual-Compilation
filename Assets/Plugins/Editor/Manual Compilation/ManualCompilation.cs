@@ -82,7 +82,7 @@ namespace Project.Editor
             EditorApplication.UnlockReloadAssemblies();
 
 #if UNITY_2019_3_OR_NEWER
-            bool cleanBuildCache = Menu.GetChecked(ManualCompilationMenus.CLEAN_BUILD_CACHE_PATH);
+            bool cleanBuildCache = Menu.GetChecked(ManualCompilationMenuItems.CLEAN_BUILD_CACHE_PATH);
             CompilationPipeline.RequestScriptCompilation(cleanBuildCache ? RequestScriptCompilationOptions.CleanBuildCache : RequestScriptCompilationOptions.None);
 #elif UNITY_2017_1_OR_NEWER
             var editorAssembly = Assembly.GetAssembly(typeof(Editor));
